@@ -83,6 +83,7 @@ void GameUpdateRender(state_t	*game_state)
             else
             {
                 game_state->remaining_chances -= 1;
+                game_state->current_chr = 0;
             }
 		}	
 		else
