@@ -14,7 +14,7 @@
 
 typedef struct
 {
-    int	size;
+	int	size;
 	char	chrs[WORD_MAX_SIZE];
 } word_t;
 
@@ -26,6 +26,7 @@ typedef struct
 	int	current_chr;
 	int	remaining_chances;
 	int	chr;
+	int score;
 
 
 } state_t ;
@@ -36,6 +37,7 @@ char	word_list[WORD_MAX_COUNT][WORD_MAX_SIZE] = {"malicia", "mizeria", "fluxo", 
 
 word_t	words[WORD_MAX_COUNT] = {0};
 
+int score;
 
 int win_x, win_y;
 
@@ -51,7 +53,6 @@ void generate_words()
 
 void put_word(int y, int init_x, word_t *word)
 {
-    clear();
 	for (int i=0; i < word->size; ++i)
 	{
 		mvprintw(y/2, init_x+i,"%c",word->chrs[i]);
@@ -66,29 +67,46 @@ void GameUpdateRender(state_t	*game_state)
 		game_state->current_word = random() % CUR_W_NUM;
 		game_state->remaining_chances = 3;
 		game_state->playing = true;
-        game_state->current_chr = 0;
-        game_state->chr = 0;
+		game_state->current_chr = 0;
+		game_state->chr = 0;
 	}
 	else
 	{
 		if (game_state->remaining_chances > 0 && game_state->current_chr < words[game_state->current_word].size)
 		{
-            put_word(win_y/2,(win_x/2)-words[game_state->current_word].size/2,&(words[game_state->current_word]));
-            game_state->chr = getch();
-            if (game_state->chr == words[game_state->current_word].chrs[game_state->current_chr])
-            {
-                game_state->current_chr += 1;
+			// RENDER START
+			
+			clear();
 
-            }
-            else
-            {
-                game_state->remaining_chances -= 1;
-                game_state->current_chr = 0;
-            }
+			mvprintw(2,2,"%d",game_state->score);
+			put_word(win_y/2,(win_x/2)-words[game_state->current_word].size/2,&(words[game_state->current_word]));
+			
+
+
+			// RENDER END
+			game_state->chr = getch();
+			if (game_state->chr == words[game_state->current_word].chrs[game_state->current_chr])
+			{
+				game_state->current_chr += 1;
+
+			}
+			else
+			{
+				game_state->remaining_chances -= 1;
+				game_state->current_chr = 0;
+			}
 		}	
 		else
 		{
 			game_state->playing = false;
+			if (game_state->current_chr == words[game_state->current_word].size)
+			{
+				game_state->score += 100;
+			}
+			else
+			{
+				game_state->score -= 1;
+			}
 		}
 	}
 
@@ -134,7 +152,7 @@ int main(int argc, char *argv[])
 			GameUpdateRender(&game_state);
 		}	
 
-        
+
 	}
 	endwin();
 	return 0;
