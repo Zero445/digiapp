@@ -10,22 +10,34 @@
 #define min_y	20
 #define WORD_MAX_SIZE 21
 #define WORD_MAX_COUNT	255	
+#define CUR_W_NUM	8
 
 typedef struct
 {
-	int	size;
+    int	size;
 	char	chrs[WORD_MAX_SIZE];
 } word_t;
 
 
+typedef struct
+{
+	bool	playing;
+	int	current_word;
+	int	current_chr;
+	int	remaining_chances;
+	int	chr;
 
-char	word_list[WORD_MAX_COUNT][WORD_MAX_SIZE] = {"Malicia", "Mizeria", "Fluxo", "Constante", "Anime", "Visual", "Rock", "Gotico"};
+
+} state_t ;
+
+
+char	word_list[WORD_MAX_COUNT][WORD_MAX_SIZE] = {"malicia", "mizeria", "fluxo", "constante", "anime", "visual", "rock", "gotico"};
 
 
 word_t	words[WORD_MAX_COUNT] = {0};
 
 
-
+int win_x, win_y;
 
 
 void generate_words()
@@ -39,56 +51,89 @@ void generate_words()
 
 void put_word(int y, int init_x, word_t *word)
 {
+    clear();
 	for (int i=0; i < word->size; ++i)
 	{
-		mvprintw(y, init_x+i,"%c",word->chrs[i]);
+		mvprintw(1, 20+i,"%c",word->chrs[i]);
 	}
 
 }
 
+void GameUpdateRender(state_t	*game_state)
+{
+	if (game_state->playing == false)
+	{
+		game_state->current_word = random() % CUR_W_NUM;
+		game_state->remaining_chances = 3;
+		game_state->playing = true;
+        game_state->current_chr = 0;
+        game_state->chr = 0;
+	}
+	else
+	{
+		if (game_state->remaining_chances > 0 && game_state->current_chr < words[game_state->current_word].size)
+		{
+            put_word(win_y/2,win_x,&(words[game_state->current_word]));
+            game_state->chr = getch();
+            if (game_state->chr == words[game_state->current_word].chrs[game_state->current_chr])
+            {
+                game_state->current_chr += 1;
+
+            }
+            else
+            {
+                game_state->remaining_chances -= 1;
+            }
+		}	
+		else
+		{
+			game_state->playing = false;
+		}
+	}
+
+}
 
 int main(int argc, char *argv[])
 {
 
-	struct tm time;
+	state_t		game_state = { .playing = false, 0};
+	struct tm	time;
+	bool	should_close = 0;
+
+
 	mktime(&time);
 	srandom(time.tm_year * time.tm_sec + 2);
 	generate_words();
 
-	int ch;
-	int win_x, win_y;
-	bool	should_close = 0;
+
+
+
 	initscr();
 	cbreak();
 	noecho();
 	keypad(stdscr,TRUE);
-	
+
 	while(!should_close)
 	{	
 		getmaxyx(stdscr, win_y, win_x);
-		int random_word = random() % 8 ;
-		ch = getch();
-		
-		if (ch == 27)
+		if (game_state.chr == 27)
 		{
 			should_close = 1;
 		}
-		
-		clear();	
-		
-		
-		
+
+
+
+
 		if (win_x < min_x || win_y < min_y)
 		{
 			mvprintw(win_y/2, win_x/2, "Window too small!");
 		}
 		else
 		{
-			put_word(win_y/2,win_x/2,&(words[random_word]));
+			GameUpdateRender(&game_state);
 		}	
-		
-		
-		refresh();
+
+        
 	}
 	endwin();
 	return 0;
