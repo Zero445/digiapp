@@ -54,7 +54,7 @@ void put_word(int y, int init_x, word_t *word)
     clear();
 	for (int i=0; i < word->size; ++i)
 	{
-		mvprintw(1, 20+i,"%c",word->chrs[i]);
+		mvprintw(y/2, init_x+i,"%c",word->chrs[i]);
 	}
 
 }
@@ -73,7 +73,7 @@ void GameUpdateRender(state_t	*game_state)
 	{
 		if (game_state->remaining_chances > 0 && game_state->current_chr < words[game_state->current_word].size)
 		{
-            put_word(win_y/2,win_x,&(words[game_state->current_word]));
+            put_word(win_y/2,(win_x/2)-words[game_state->current_word].size/2,&(words[game_state->current_word]));
             game_state->chr = getch();
             if (game_state->chr == words[game_state->current_word].chrs[game_state->current_chr])
             {
